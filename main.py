@@ -51,13 +51,9 @@ MAP_HTML = f"""
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- Local Leaflet Files -->
     <link rel="stylesheet" href="leaflet.css" />
     <script src="leaflet.js"></script>
-    
-    <!-- Qt WebChannel (Leave this exactly as is) -->
     <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
-    
     <style>
         body {{ margin: 0; padding: 0; overflow: hidden; }}
         #map {{ 
@@ -104,7 +100,7 @@ MAP_HTML = f"""
             if(bridge) {{ bridge.updateCoords(e.latlng.lat, e.latlng.lng); }}
         }});
 
-        // Function called by Python to toggle the visual state
+        // Function to handle map state change 
         window.setMapState = function(enabled) {{
             var mapDiv = document.getElementById('map');
             var overlay = document.getElementById('overlay');
@@ -158,7 +154,6 @@ class ImageUpdater(QThread):
             log_path = self.out_dir / "debug_log.txt"
             log_context = open(log_path, "a", encoding="utf-8")
         else:
-            # This creates a dummy context that does nothing when called
             import io
             log_context = io.StringIO()
 
@@ -244,7 +239,7 @@ class ImageUpdater(QThread):
                         # Update GPS Date/Time
                         try:
                             local_dt = datetime.strptime(new_date, "%Y:%m:%d %H:%M:%S")
-                            # We subtract the offset to get back to UTC
+                            # Subtract the offset to get back to UTC
                             # Example: 13:00 in NY (UTC-5) -> 13 - (-5) = 18:00 UTC
                             utc_dt = local_dt - timedelta(hours=self.payload['offset_h'])
                             
@@ -314,10 +309,8 @@ class EXIFeditorApp(QMainWindow):
         splitter = QSplitter(Qt.Horizontal)
         
         # --- THE SIDEBAR CONTAINER ---
-        # (Originally: left_widget)
         left_widget = QWidget()
         # --- THE SIDEBAR'S VERTICAL STACK ---
-        # (Originally: left_layout)
         left_layout = QVBoxLayout(left_widget)
 
         # ==========================================
@@ -519,7 +512,7 @@ class EXIFeditorApp(QMainWindow):
 
     def clear_file_list(self):
         self.file_list.clear()
-        hint_item = QListWidgetItem("🖼️ Drag & Drop JPG images here...")
+        hint_item = QListWidgetItem("🖼️ Drag & Drop JPG/PNGs here...")
         hint_item.setFlags(Qt.NoItemFlags)
         hint_item.setTextAlignment(Qt.AlignCenter)
         self.file_list.addItem(hint_item)
@@ -531,7 +524,7 @@ class EXIFeditorApp(QMainWindow):
                 return
                 
             for item in items:
-                # Check if we are accidentally trying to "remove" the hint text
+                # Check if the user is trying to "remove" the hint text
                 if "Drag & Drop" in item.text():
                     continue
                 self.file_list.takeItem(self.file_list.row(item))
@@ -609,7 +602,6 @@ class EXIFeditorApp(QMainWindow):
         for f in files:
             if f.lower().endswith(('.jpg', '.jpeg', '.png')) and f not in existing:
                 pixmap = QPixmap(f).scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                #item = QListWidgetItem(QIcon(pixmap), os.path.basename(f))
                 icon = self.style().standardIcon(QStyle.SP_FileIcon) 
                 item = QListWidgetItem(icon, os.path.basename(f))
                 item.setData(Qt.UserRole, f)
@@ -620,7 +612,7 @@ class EXIFeditorApp(QMainWindow):
                 for i in range(self.file_list.count()) 
                 if self.file_list.item(i).data(Qt.UserRole)]
 
-        # Check for no files OR no tasks selected
+        # Check for the case where no files OR no tasks selected
         apply_gps = self.cb_gps.isChecked()
         apply_date = self.cb_date.isChecked()
         
